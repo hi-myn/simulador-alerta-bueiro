@@ -18,6 +18,7 @@ def receber_alerta():
         # Aqui, na versão boilerplate, apenas imprimimos o JSON no console
         print(f"[SERVIDOR] Alerta Recebido:")
         print(f" > Dados: {dados_recebidos}")
+        print("")
 
         lista_alertas.append(dados_recebidos)
         
