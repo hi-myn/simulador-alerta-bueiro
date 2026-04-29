@@ -83,7 +83,7 @@ if __name__ == "__main__":
             else:
                 print(f"[SENSOR] do bueiro {dados_sensor['id_bueiro']}, no bairro {dados_sensor['localizacao']}. Nível normal: {nivel}cm - ALERTA_VERDE. Aguardando...")
         print("")
-        time.sleep(3)
+        time.sleep(7)
     
 
 

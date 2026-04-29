@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify # type: ignore
+from flask import Flask, request, jsonify, render_template # type: ignore
 
 app = Flask(__name__)
 
@@ -49,6 +49,10 @@ def retorna_alerta():
             "status": "erro",
             "mensagem": "Falha ao processar a requisição."
         }), 400
+
+@app.route('/', methods=['GET'])
+def page():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     # Inicia o servidor Flask na porta 5000
