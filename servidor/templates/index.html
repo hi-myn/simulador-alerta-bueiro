@@ -402,6 +402,10 @@
                     <p class="subtitulo">Salvador, Bahia — Monitoramento em tempo real</p>
                 </div>
                 <div class="stats">
+                    <div class="stat-card stat-verde">
+                        <div class="stat-numero" id="count-verde">0</div>
+                        <div class="stat-label">Verde</div>
+                    </div>
                     <div class="stat-card stat-amarelo">
                         <div class="stat-numero" id="count-amarelo">0</div>
                         <div class="stat-label">Amarelo</div>
@@ -496,6 +500,7 @@
                 dados.forEach(alerta => {
                     ultimoPorBueiro[alerta.id_bueiro] = alerta;
                 })
+                const bueirosAtivos = Object.values(ultimoPorBueiro)
 
                 const tbody = document.getElementById('corpo-tabela');
 
@@ -505,16 +510,16 @@
                 }
 
                 // Contadores
-                const counts = { ALERTA_AMARELO: 0, ALERTA_LARANJA: 0, ALERTA_VERMELHO: 0 };
-                dados.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+                const counts = { ALERTA_VERDE:0, ALERTA_AMARELO: 0, ALERTA_LARANJA: 0, ALERTA_VERMELHO: 0 };
+                bueirosAtivos.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
+                document.getElementById('count-verde').textContent = counts['ALERTA_VERDE']
                 document.getElementById('count-amarelo').textContent = counts['ALERTA_AMARELO'];
                 document.getElementById('count-laranja').textContent = counts['ALERTA_LARANJA'];
                 document.getElementById('count-vermelho').textContent = counts['ALERTA_VERMELHO'];
                 document.getElementById('count-total').textContent = dados.length;
 
                 // Tabela — mostra os mais recentes primeiro
-                const bueirosAtivos = Object.values(ultimoPorBueiro)
                 tbody.innerHTML = bueirosAtivos.map(alerta => {
                     const info = getStatusInfo(alerta.status);
                     const pct = Math.min((alerta.nivel_agua_cm / NIVEL_MAXIMO) * 100, 100);

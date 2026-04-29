@@ -65,8 +65,24 @@ if __name__ == "__main__":
     while True:
         for bueiro in BUEIROS:
             nivel = bueiro['nivel_atual']
-            chuva_ciclo = random.randint(0,15)
+            chuva_ciclo = 0
+
+            chance_chuva = random.random()
+            if chance_chuva < 0.30:
+                chuva_ciclo = -random.randint(1,5)
+            elif chance_chuva < 0.70:
+                chuva_ciclo = random.randint(1,5)
+            elif chance_chuva < 0.90:
+                chuva_ciclo = random.randint(1,10)
+            elif chance_chuva < 0.98:
+                chuva_ciclo = random.randint(1,15)
+            else:
+                chuva_ciclo = random.randint(1,20)
+
             nivel += chuva_ciclo
+
+            nivel = max(0,nivel)
+
             status_chuva_atual = status_chuva(nivel)
             bueiro['nivel_atual'] = nivel
 
@@ -78,10 +94,9 @@ if __name__ == "__main__":
                 "localizacao": bueiro['localizacao']
             }
 
-            if status_chuva_atual != "ALERTA_VERDE":
-                enviar_alerta(dados_sensor)
-            else:
-                print(f"[SENSOR] do bueiro {dados_sensor['id_bueiro']}, no bairro {dados_sensor['localizacao']}. Nível normal: {nivel}cm - ALERTA_VERDE. Aguardando...")
+          
+            enviar_alerta(dados_sensor)
+          
         print("")
         time.sleep(7)
     
