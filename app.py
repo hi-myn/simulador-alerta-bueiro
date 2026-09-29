@@ -15,9 +15,24 @@ lista_alertas = []
 # dentro do próprio servidor, sem precisar de um segundo processo/terminal)
 
 BUEIROS = [
-    {"id_bueiro": "BUEIRO_01", "localizacao": "Iguatemi", "nivel_atual": 0, "intensidade_chuva": "sem_chuva"},
-    {"id_bueiro": "BUEIRO_02", "localizacao": "Arenoso", "nivel_atual": 0, "intensidade_chuva": "sem_chuva"},
-    {"id_bueiro": "BUEIRO_03", "localizacao": "Rio Vermelho", "nivel_atual": 0, "intensidade_chuva": "sem_chuva"},
+    {
+        "id_bueiro": "BUEIRO_01",
+        "localizacao": "Iguatemi",
+        "nivel_atual": 0,
+        "intensidade_chuva": "sem_chuva",
+    },
+    {
+        "id_bueiro": "BUEIRO_02",
+        "localizacao": "Arenoso",
+        "nivel_atual": 0,
+        "intensidade_chuva": "sem_chuva",
+    },
+    {
+        "id_bueiro": "BUEIRO_03",
+        "localizacao": "Rio Vermelho",
+        "nivel_atual": 0,
+        "intensidade_chuva": "sem_chuva",
+    },
 ]
 
 MATRIZ_TRANSICAO = {
@@ -116,7 +131,8 @@ def loop_simulador(intervalo_segundos=7):
 
 # Rotas da API
 
-@app.route('/alertas', methods=['POST'])
+
+@app.route("/alertas", methods=["POST"])
 def receber_alerta():
     """
     Mantido por compatibilidade: ainda é possível enviar um alerta
@@ -131,50 +147,49 @@ def receber_alerta():
 
         lista_alertas.append(dados_recebidos)
 
-        return jsonify({
-            "status": "sucesso",
-            "mensagem": "Alerta recebido com sucesso!"
-        }), 200
+        return (
+            jsonify({"status": "sucesso", "mensagem": "Alerta recebido com sucesso!"}),
+            200,
+        )
 
     except Exception as e:
         print(f"[SERVIDOR] Erro ao processar o alerta: {e}")
-        return jsonify({
-            "status": "erro",
-            "mensagem": "Falha ao processar a requisição."
-        }), 400
+        return (
+            jsonify({"status": "erro", "mensagem": "Falha ao processar a requisição."}),
+            400,
+        )
 
 
-@app.route('/alertas', methods=['GET'])
+@app.route("/alertas", methods=["GET"])
 def retorna_alerta():
     try:
         return jsonify(lista_alertas), 200
     except Exception as e:
         print(f"[SERVIDOR] Erro ao retornar o alerta: {e}")
-        return jsonify({
-            "status": "erro",
-            "mensagem": "Falha ao processar a requisição."
-        }), 400
+        return (
+            jsonify({"status": "erro", "mensagem": "Falha ao processar a requisição."}),
+            400,
+        )
 
 
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def page():
-    return render_template('index.html')
+    return render_template("index.html")
 
 
 # Inicialização: inicia a thread do simulador junto com o servidor
+
 
 def iniciar_simulador_em_thread():
     thread = threading.Thread(target=loop_simulador, daemon=True)
     thread.start()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("[SERVIDOR] Iniciando simulador em thread de segundo plano...")
     iniciar_simulador_em_thread()
 
     print("[SERVIDOR] Iniciando o servidor de alertas na porta 5000...")
-    # use_reloader=False evita que o Flask reinicie o processo e duplique a
-    # thread do simulador (o reloader é útil em desenvolvimento, mas aqui
-    # geraria dois simuladores rodando ao mesmo tempo)
+
     porta = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=porta)
+    app.run(debug=True, use_reloader=False, host="0.0.0.0", port=porta)

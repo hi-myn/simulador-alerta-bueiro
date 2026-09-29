@@ -24,7 +24,7 @@ O projeto foi desenvolvido como **prova de conceito (PoC)**, simulando o comport
 ---
 
 ## 🏗️ Arquitetura
-
+ 
 ```
                 ┌────────────────────────────────┐
                 │            app.py               │
@@ -51,10 +51,6 @@ O projeto foi desenvolvido como **prova de conceito (PoC)**, simulando o comport
                                ▼
                      Navegador (dashboard)
 ```
-
-O simulador não é mais um processo separado: ele roda como uma **thread interna do próprio servidor Flask**, atualizando os dados diretamente em memória. Isso significa que **um único comando** (`python app.py`) já inicia tanto a geração dos dados quanto a API e o dashboard — não é mais necessário abrir dois terminais.
-
-> Essa unificação também foi o que viabilizou a hospedagem do projeto em um serviço gratuito (Render), já que a maioria desses serviços sustenta apenas um processo web por aplicação.
 
 ---
 
@@ -115,22 +111,18 @@ Cada bueiro possui seu próprio estado de chuva, evoluindo de forma independente
 ---
 
 ## 📁 Estrutura do Projeto
-
+ 
 ```
 simulador-alerta-bueiro/
 │
+├── .gitignore
+├── LICENSE
 ├── README.md
 ├── requirements.txt
-│
-└── servidor/
-    ├── app.py              # API Flask + simulação (thread interna) + rota do dashboard
-    └── templates/
-        └── index.html      # Dashboard de monitoramento em tempo real
+├── app.py              # API Flask + simulação (thread interna) + rota do dashboard
+└── templates/
+    └── index.html      # Dashboard de monitoramento em tempo real
 ```
-
-> A antiga pasta `simulador/` com o `sensor.py` não é mais utilizada nesta versão — toda a lógica de simulação foi incorporada ao `app.py`.
-
----
 
 ## ✅ Pré-requisitos
 
@@ -165,11 +157,8 @@ numpy==1.26.4
 ### 3. Iniciar o servidor
 
 ```bash
-cd servidor
 python app.py
 ```
-
-O próprio comando já inicia a simulação em segundo plano — não é necessário abrir um segundo terminal.
 
 ### 4. Consultar o dashboard no navegador
 
