@@ -9,9 +9,9 @@ Centro Universitário Internacional UNINTER
 
 Sistema de simulação que reproduz o comportamento de sensores de nível de água em bueiros urbanos. Desenvolvido com foco em comunidades vulneráveis de Salvador/BA — regiões com histórico recorrente de alagamentos durante períodos de chuvas intensas.
 
-Múltiplos sensores simulados monitoram bueiros de forma independente, cada um com sua própria intensidade de chuva e nível de água. Quando o nível atinge limites críticos, o sensor envia alertas automáticos para um servidor central via API REST. Um dashboard web exibe o estado de todos os bueiros em tempo real, com atualização automática a cada 7 segundos.
+Múltiplos bueiros são monitorados de forma independente, cada um com sua própria intensidade de chuva e nível de água. Quando o nível atinge limites críticos, o sistema classifica o alerta correspondente. Um dashboard web exibe o estado de todos os bueiros em tempo real, com atualização automática a cada 7 segundos.
 
-O projeto foi desenvolvido como **prova de conceito (PoC)**, simulando uma arquitetura distribuída de IoT sem depender de hardware físico.
+O projeto foi desenvolvido como **prova de conceito (PoC)**, simulando o comportamento de uma solução de IoT sem depender de hardware físico.
 
 ---
 
@@ -26,14 +26,35 @@ O projeto foi desenvolvido como **prova de conceito (PoC)**, simulando uma arqui
 ## 🏗️ Arquitetura
 
 ```
-[sensor.py]  →  HTTP POST (JSON)  →  [app.py]  →  [index.html]
-  Simulador                           Servidor        Dashboard
-  3 bueiros                           Flask           Tempo real
-  Chuva probabilística                API REST        Auto-refresh
-  Escoamento                          Histórico       Visualização
+                ┌────────────────────────────────┐
+                │            app.py               │
+                │           (Flask)               │
+                │                                  │
+                │  ┌────────────────────────────┐  │
+                │  │   Thread do simulador       │  │
+                │  │   (roda em segundo plano)   │  │
+                │  │                              │  │
+                │  │  • Cadeia de Markov          │  │
+                │  │  • Distribuição Gama         │  │
+                │  │  • Gera novo alerta a cada   │  │
+                │  │    7 segundos                │  │
+                │  └─────────────┬────────────────┘  │
+                │                │ atualiza           │
+                │                ▼                    │
+                │        lista_alertas (memória)      │
+                │                │                     │
+                │      ┌─────────┴─────────┐           │
+                │      ▼                   ▼           │
+                │  GET /alertas      GET /  (index.html)│
+                └────────────────────────────────┘
+                               │
+                               ▼
+                     Navegador (dashboard)
 ```
 
-Os dois módulos rodam como **processos independentes**, comunicando-se pela rede local via protocolo HTTP — simulando uma arquitetura distribuída real, onde sensores físicos enviariam dados a um servidor central.
+O simulador não é mais um processo separado: ele roda como uma **thread interna do próprio servidor Flask**, atualizando os dados diretamente em memória. Isso significa que **um único comando** (`python app.py`) já inicia tanto a geração dos dados quanto a API e o dashboard — não é mais necessário abrir dois terminais.
+
+> Essa unificação também foi o que viabilizou a hospedagem do projeto em um serviço gratuito (Render), já que a maioria desses serviços sustenta apenas um processo web por aplicação.
 
 ---
 
@@ -84,10 +105,10 @@ Cada bueiro possui seu próprio estado de chuva, evoluindo de forma independente
 ## 🛠️ Tecnologias
 
 - **Python 3.10+**
-- **Flask** — servidor e API REST
-- **requests** — comunicação HTTP no simulador
+- **Flask** — servidor, API REST e execução da simulação
 - **numpy** — geração da distribuição Gama
 - **random** — sorteio dos estados da Cadeia de Markov
+- **threading** — execução do simulador em segundo plano, junto do servidor
 - **datetime** — timestamp dos alertas
 - **HTML, CSS e JavaScript** — dashboard de monitoramento com auto-refresh
 
@@ -101,14 +122,13 @@ simulador-alerta-bueiro/
 ├── README.md
 ├── requirements.txt
 │
-├── servidor/
-│   ├── app.py              # API Flask — recebe e armazena alertas
-│   └── templates/
-│       └── index.html      # Dashboard de monitoramento em tempo real
-│
-└── simulador/
-    └── sensor.py           # Simula sensores nos bueiros
+└── servidor/
+    ├── app.py              # API Flask + simulação (thread interna) + rota do dashboard
+    └── templates/
+        └── index.html      # Dashboard de monitoramento em tempo real
 ```
+
+> A antiga pasta `simulador/` com o `sensor.py` não é mais utilizada nesta versão — toda a lógica de simulação foi incorporada ao `app.py`.
 
 ---
 
@@ -116,7 +136,6 @@ simulador-alerta-bueiro/
 
 - [Python 3.10 ou superior](https://www.python.org/downloads/) instalado
 - `pip` atualizado (`pip install --upgrade pip`)
-- Duas janelas de terminal disponíveis (uma para o servidor, outra para o simulador)
 
 ---
 
@@ -135,32 +154,37 @@ cd simulador-alerta-bueiro
 pip install -r requirements.txt
 ```
 
-Conteúdo esperado do `requirements.txt`:
+Conteúdo do `requirements.txt`:
 
 ```
-Flask
-requests
-numpy
+Flask==3.0.0
+requests==2.31.0
+numpy==1.26.4
 ```
 
-### 3. Iniciar o servidor (Terminal 1)
+### 3. Iniciar o servidor
 
 ```bash
 cd servidor
 python app.py
 ```
 
-### 4. Iniciar o simulador (Terminal 2)
+O próprio comando já inicia a simulação em segundo plano — não é necessário abrir um segundo terminal.
 
-```bash
-cd simulador
-python sensor.py
-```
-
-### 5. Consultar o dashboard no navegador
+### 4. Consultar o dashboard no navegador
 
 ```
 http://127.0.0.1:5000/
+```
+
+---
+
+## 🌐 Acesso Online
+
+O projeto também está publicado e pode ser acessado diretamente pelo link abaixo, sem necessidade de instalação local:
+
+```
+<INSIRA_AQUI_O_LINK_DO_DEPLOY>
 ```
 
 ---
@@ -170,10 +194,10 @@ http://127.0.0.1:5000/
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/` | Dashboard de monitoramento |
-| POST | `/alertas` | Recebe um alerta do sensor |
 | GET | `/alertas` | Retorna todos os alertas registrados (JSON) |
+| POST | `/alertas` | Permite registrar um alerta manualmente (mantido por compatibilidade/testes) |
 
-**Exemplo de payload enviado pelo sensor:**
+**Exemplo de item retornado por `GET /alertas`:**
 
 ```json
 {
@@ -187,17 +211,13 @@ http://127.0.0.1:5000/
 
 ---
 
-## 🖥️ Preview do Dashboard
-
-![alt text](image.png)
----
-
 ## 🧪 Testes Realizados
 
-- Comunicação HTTP entre múltiplos sensores simulados e o servidor Flask, sem perda de dados;
+- Geração contínua de dados pela thread interna do simulador, sem bloquear as respostas da API;
 - Classificação automática correta dos quatro níveis de alerta (verde, amarelo, laranja, vermelho);
-- Atualização em tempo real do dashboard a cada ciclo do simulador (7 segundos);
-- Comportamento coerente da geração de chuva (transições suaves entre estados, sem saltos abruptos).
+- Atualização em tempo real do dashboard a cada ciclo de simulação (7 segundos);
+- Comportamento coerente da geração de chuva (transições suaves entre estados, sem saltos abruptos);
+- Execução estável do servidor com um único processo, sem duplicação da thread de simulação.
 
 ---
 
@@ -207,7 +227,8 @@ http://127.0.0.1:5000/
 - Autenticação na API REST;
 - Histórico gráfico de nível de água por bueiro ao longo do tempo;
 - Integração com dados climáticos reais via API meteorológica;
-- Notificações via e-mail/SMS em caso de alerta vermelho.
+- Notificações via e-mail/SMS em caso de alerta vermelho;
+- Migração para um servidor WSGI de produção (ex: Gunicorn), em vez do servidor de desenvolvimento do Flask.
 
 ---
 
@@ -220,5 +241,6 @@ Projeto acadêmico desenvolvido para fins educacionais, sem fins comerciais.
 ## 👩‍💻 Autora
 
 **Yasmin Gonçalves de Souza**
+RU: 4383698
 Bacharelado em Engenharia de Software — UNINTER
 Atividade Extensionista: Tecnologia Aplicada à Inclusão Digital
