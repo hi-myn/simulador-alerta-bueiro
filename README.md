@@ -173,7 +173,7 @@ http://127.0.0.1:5000/
 O projeto também está publicado e pode ser acessado diretamente pelo link abaixo, sem necessidade de instalação local:
 
 ```
-<INSIRA_AQUI_O_LINK_DO_DEPLOY>
+https://simulador-alerta-bueiro.onrender.com
 ```
 
 ---
