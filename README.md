@@ -230,6 +230,5 @@ Projeto acadêmico desenvolvido para fins educacionais, sem fins comerciais.
 ## 👩‍💻 Autora
 
 **Yasmin Gonçalves de Souza**
-RU: 4383698
 Bacharelado em Engenharia de Software — UNINTER
 Atividade Extensionista: Tecnologia Aplicada à Inclusão Digital
